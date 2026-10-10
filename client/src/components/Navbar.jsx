@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { QrCode, Bell, LogOut, User, Shield, Wrench, GraduationCap, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+import { ROLE_LABELS } from '../constants/routes';
+
 export function Navbar({ onOpenScanner }) {
   const { user, profile, role, signOut, isConfigured } = useAuth();
   const navigate = useNavigate();
@@ -12,7 +14,9 @@ export function Navbar({ onOpenScanner }) {
     student: GraduationCap,
     faculty: GraduationCap,
     technician: Wrench,
+    maintenance_admin: Shield,
     admin: Shield,
+    supervisor: Shield,
     system_admin: Shield
   };
 
@@ -92,8 +96,8 @@ export function Navbar({ onOpenScanner }) {
                   <div className="text-xs font-semibold text-stone-900 leading-tight">
                     {profile?.full_name || user.email?.split('@')[0]}
                   </div>
-                  <div className="text-[10px] capitalize font-medium text-amber-700">
-                    {role.replace('_', ' ')}
+                  <div className="text-[10px] font-semibold text-amber-700">
+                    {ROLE_LABELS[role] || role?.replace('_', ' ')}
                   </div>
                 </div>
 

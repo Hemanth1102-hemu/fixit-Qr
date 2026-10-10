@@ -63,11 +63,11 @@ export async function requireAuth(req, res, next) {
       .eq('id', user.id)
       .single();
 
-    if (profileError || !profile) {
+    if (profileError || !profile || !profile.role) {
       return res.status(403).json({
         success: false,
-        error: 'Forbidden',
-        message: 'User profile not found in campus database. Contact an administrator.'
+        error: 'AccountNotProvisioned',
+        message: 'Your account is authenticated, but application access has not been configured. Please contact the administrator.'
       });
     }
 
@@ -75,8 +75,8 @@ export async function requireAuth(req, res, next) {
     if (!profile.is_active) {
       return res.status(403).json({
         success: false,
-        error: 'Account Inactive',
-        message: 'Your SRMIST maintenance account has been deactivated. Contact the estate maintenance office.'
+        error: 'AccountDisabled',
+        message: 'Your account has been deactivated. Please contact the administrator.'
       });
     }
 

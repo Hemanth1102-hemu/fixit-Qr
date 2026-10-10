@@ -106,11 +106,40 @@ router.post('/register', async (req, res, next) => {
   }
 });
 
-// GET /api/v1/me - Get authenticated user's profile and verified role
+import { getDestinationForRole, getPermissionsForRole } from '../constants/roles.js';
+
+// GET /api/v1/me - Get authoritative user profile, role, default destination & permissions
 router.get('/', requireAuth, (req, res) => {
+  const profile = req.profile;
+  const role = profile.role;
+  const defaultDestination = getDestinationForRole(role) || '/student/dashboard';
+  const permissions = getPermissionsForRole(role);
+
   res.json({
     success: true,
-    data: req.profile
+    data: {
+      id: profile.id,
+      email: profile.email,
+      full_name: profile.full_name,
+      role: role,
+      roles: [role],
+      default_destination: defaultDestination,
+      permissions: permissions,
+      is_active: profile.is_active,
+      created_at: profile.created_at,
+      updated_at: profile.updated_at
+    }
+  });
+});
+
+// GET /api/v1/me/permissions - Direct access to user permissions
+router.get('/permissions', requireAuth, (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      role: req.profile.role,
+      permissions: getPermissionsForRole(req.profile.role)
+    }
   });
 });
 

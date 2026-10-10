@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   QrCode, 
   Lock, 
   Mail, 
   AlertCircle, 
   ArrowRight, 
-  Shield, 
-  Wrench, 
-  GraduationCap, 
-  CheckCircle2,
-  Building,
-  UserPlus
+  Loader2,
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../lib/api';
@@ -19,12 +15,12 @@ import { apiRequest } from '../lib/api';
 export function Login() {
   const { signIn, isConfigured } = useAuth();
   const navigate = useNavigate();
-  
+  const location = useLocation();
+
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [requestedRole, setRequestedRole] = useState('student');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successNotice, setSuccessNotice] = useState('');
@@ -36,9 +32,8 @@ export function Login() {
     setError('');
     setSuccessNotice('');
 
-    // Client-side domain validation guidance
     if (!isSrmistEmail(email)) {
-      setError('Institutional requirement: Please enter a verified SRMIST email address ending in @srmist.edu.in');
+      setError('Institutional requirement: Please enter an official SRMIST email address ending in @srmist.edu.in');
       return;
     }
 
@@ -51,34 +46,30 @@ export function Login() {
           body: JSON.stringify({
             full_name: fullName,
             email,
-            password,
-            requested_role: requestedRole
+            password
           })
         });
         setSuccessNotice(res.message || 'Account registered! Please sign in with your credentials.');
         setIsRegisterMode(false);
+        setPassword('');
       } catch (err) {
-        setError(err.message || 'Registration failed');
+        setError(err.message || 'Registration failed. Please verify institutional details.');
       } finally {
         setLoading(false);
       }
     } else {
       try {
-        await signIn(email, password);
-        navigate('/');
+        // Single unified login:
+        // Role is determined AUTOMATICALLY from authoritative database records upon authentication
+        const result = await signIn(email, password);
+        const target = location.state?.from?.pathname || result.destination || '/';
+        navigate(target, { replace: true });
       } catch (err) {
-        setError(err.message || 'Authentication failed. Please verify credentials.');
+        setError(err.message || 'Invalid institutional credentials. Please check your email and password.');
       } finally {
         setLoading(false);
       }
     }
-  };
-
-  const handleDemoFill = (demoEmail, demoPass) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setIsRegisterMode(false);
-    setError('');
   };
 
   return (
@@ -97,7 +88,7 @@ export function Login() {
             FixIt QR Campus Maintenance
           </h2>
           <p className="mt-1 text-xs text-stone-500">
-            Rapid QR equipment reporting & work order management for SRMIST classrooms and laboratories
+            Unified access portal for students, faculty, maintenance staff, and administration
           </p>
         </div>
       </div>
@@ -112,7 +103,7 @@ export function Login() {
               onClick={() => { setIsRegisterMode(false); setError(''); }}
               className={`pb-1 transition ${!isRegisterMode ? 'border-b-2 border-amber-600 text-amber-900' : 'text-stone-400 hover:text-stone-700'}`}
             >
-              Sign In with SRMIST ID
+              Sign In to Campus Account
             </button>
             <button
               type="button"
@@ -137,40 +128,21 @@ export function Login() {
             </div>
           )}
 
-          <form className="space-y-3.5" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {isRegisterMode && (
-              <>
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Full Name (As per SRMIST ID)
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Rahul Sharma"
-                    className="block w-full px-3 py-2 text-xs border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Institutional Role
-                  </label>
-                  <select
-                    value={requestedRole}
-                    onChange={(e) => setRequestedRole(e.target.value)}
-                    className="block w-full px-3 py-2 text-xs border border-stone-300 rounded-lg bg-white"
-                  >
-                    <option value="student">Student (B.Tech / M.Tech / PhD)</option>
-                    <option value="faculty">Faculty / Department Staff</option>
-                  </select>
-                  <p className="text-[10px] text-stone-400 mt-0.5">
-                    * Technician and administrative permissions require authorization from estate office.
-                  </p>
-                </div>
-              </>
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">
+                  Full Name (As per SRMIST ID)
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="e.g. Rahul Sharma"
+                  className="block w-full px-3 py-2 text-xs border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600"
+                />
+              </div>
             )}
 
             <div>
@@ -186,8 +158,9 @@ export function Login() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name_dept@srmist.edu.in"
+                  placeholder="user@srmist.edu.in"
                   className="block w-full pl-9 pr-3 py-2 text-xs border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 font-mono"
+                  autoComplete="username"
                 />
               </div>
               <span className="text-[10px] text-stone-500 block mt-1">
@@ -210,6 +183,7 @@ export function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
                   className="block w-full pl-9 pr-3 py-2 text-xs border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600"
+                  autoComplete="current-password"
                 />
               </div>
             </div>
@@ -219,65 +193,24 @@ export function Login() {
               disabled={loading}
               className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 transition disabled:opacity-50 mt-2"
             >
-              <span>{loading ? 'Processing...' : (isRegisterMode ? 'Create SRMIST Account' : 'Sign In to Campus Portal')}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              {loading ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Verifying Credentials & Permissions...</span>
+                </>
+              ) : (
+                <>
+                  <span>{isRegisterMode ? 'Register Account' : 'Sign In'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </>
+              )}
             </button>
           </form>
 
-          {/* Institutional Role Demo Shortcuts */}
-          <div className="pt-4 border-t border-stone-100">
-            <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block mb-2">
-              Verified SRMIST Accounts (For Evaluation & Demo)
-            </span>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => handleDemoFill('student@srmist.edu.in', 'StudentPass123!')}
-                className="p-2 text-left rounded-lg bg-stone-50 hover:bg-stone-100 border border-stone-200/60 transition"
-              >
-                <div className="flex items-center gap-1.5 font-semibold text-stone-800">
-                  <GraduationCap className="w-3.5 h-3.5 text-amber-700" />
-                  <span>SRM Student</span>
-                </div>
-                <span className="text-[10px] text-stone-500 font-mono block mt-0.5 truncate">student@srmist.edu.in</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDemoFill('faculty@srmist.edu.in', 'FacultyPass123!')}
-                className="p-2 text-left rounded-lg bg-stone-50 hover:bg-stone-100 border border-stone-200/60 transition"
-              >
-                <div className="flex items-center gap-1.5 font-semibold text-stone-800">
-                  <GraduationCap className="w-3.5 h-3.5 text-amber-900" />
-                  <span>SRM Faculty</span>
-                </div>
-                <span className="text-[10px] text-stone-500 font-mono block mt-0.5 truncate">faculty@srmist.edu.in</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDemoFill('tech.elec@srmist.edu.in', 'TechPass123!')}
-                className="p-2 text-left rounded-lg bg-stone-50 hover:bg-stone-100 border border-stone-200/60 transition"
-              >
-                <div className="flex items-center gap-1.5 font-semibold text-stone-800">
-                  <Wrench className="w-3.5 h-3.5 text-amber-700" />
-                  <span>Maintenance Staff</span>
-                </div>
-                <span className="text-[10px] text-stone-500 font-mono block mt-0.5 truncate">tech.elec@srmist.edu.in</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDemoFill('estate.admin@srmist.edu.in', 'AdminPass123!')}
-                className="p-2 text-left rounded-lg bg-stone-50 hover:bg-stone-100 border border-stone-200/60 transition"
-              >
-                <div className="flex items-center gap-1.5 font-semibold text-stone-800">
-                  <Shield className="w-3.5 h-3.5 text-amber-800" />
-                  <span>Estate Admin</span>
-                </div>
-                <span className="text-[10px] text-stone-500 font-mono block mt-0.5 truncate">estate.admin@srmist.edu.in</span>
-              </button>
-            </div>
+          <div className="pt-3 border-t border-stone-100 text-center">
+            <p className="text-[11px] text-stone-400">
+              Role permissions are recognized automatically from authoritative campus records upon sign-in.
+            </p>
           </div>
 
         </div>

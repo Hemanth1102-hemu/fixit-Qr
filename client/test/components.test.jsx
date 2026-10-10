@@ -25,4 +25,31 @@ describe('FixIt QR Frontend Components', () => {
     expect(html).toContain('Total Tickets');
     expect(html).toContain('42');
   });
+
+  describe('Role-to-Dashboard Mapping Verification', () => {
+    it('should map student to /student/dashboard', async () => {
+      const { getDashboardForRole } = await import('../src/constants/routes');
+      expect(getDashboardForRole('student')).toBe('/student/dashboard');
+    });
+
+    it('should map faculty to /faculty/dashboard', async () => {
+      const { getDashboardForRole } = await import('../src/constants/routes');
+      expect(getDashboardForRole('faculty')).toBe('/faculty/dashboard');
+    });
+
+    it('should map technician to /maintenance/dashboard', async () => {
+      const { getDashboardForRole } = await import('../src/constants/routes');
+      expect(getDashboardForRole('technician')).toBe('/maintenance/dashboard');
+    });
+
+    it('should map maintenance_admin to /maintenance-admin/dashboard', async () => {
+      const { getDashboardForRole } = await import('../src/constants/routes');
+      expect(getDashboardForRole('maintenance_admin')).toBe('/maintenance-admin/dashboard');
+    });
+
+    it('should map supervisor to /supervisor/dashboard', async () => {
+      const { getDashboardForRole } = await import('../src/constants/routes');
+      expect(getDashboardForRole('supervisor')).toBe('/supervisor/dashboard');
+    });
+  });
 });

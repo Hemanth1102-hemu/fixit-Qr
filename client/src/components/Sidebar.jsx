@@ -10,7 +10,10 @@ import {
   Users, 
   FileText, 
   ClipboardCheck,
-  History
+  History,
+  ShieldCheck,
+  FileCheck2,
+  FolderOpen
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -19,35 +22,46 @@ export function Sidebar() {
 
   const getLinks = () => {
     switch (role) {
+      case 'faculty':
+        return [
+          { to: '/faculty/dashboard', label: 'Faculty Dashboard', icon: LayoutDashboard },
+          { to: '/student/report', label: 'Report Laboratory Issue', icon: PlusCircle },
+          { to: '/faculty/complaints', label: 'My Reported Issues', icon: ClipboardCheck },
+          { to: '/student/scan', label: 'Scan Equipment QR', icon: QrCode },
+        ];
       case 'technician':
         return [
-          { to: '/', label: 'Assigned Work Orders', icon: Wrench, end: true },
-          { to: '/history', label: 'My Repair History', icon: History },
-          { to: '/scan', label: 'Scan Equipment', icon: QrCode },
+          { to: '/maintenance/dashboard', label: 'Work Orders Queue', icon: Wrench },
+          { to: '/maintenance/jobs', label: 'Active Repairs', icon: ClipboardCheck },
+          { to: '/maintenance/history', label: 'Repair History', icon: History },
+          { to: '/student/scan', label: 'Scan Equipment QR', icon: QrCode },
         ];
+      case 'maintenance_admin':
       case 'admin':
         return [
-          { to: '/', label: 'Campus Overview', icon: LayoutDashboard, end: true },
-          { to: '/complaints', label: 'Complaints Queue', icon: ClipboardCheck },
-          { to: '/equipment', label: 'Equipment & QR Labels', icon: QrCode },
-          { to: '/buildings', label: 'Buildings & Rooms', icon: Building2 },
-          { to: '/analytics', label: 'Analytics & Reports', icon: BarChart3 },
+          { to: '/maintenance-admin/dashboard', label: 'Operations Overview', icon: LayoutDashboard },
+          { to: '/maintenance-admin/inbox', label: 'Complaint Inbox & Triage', icon: ClipboardCheck },
+          { to: '/maintenance-admin/equipment', label: 'Equipment & QR Labels', icon: QrCode },
+          { to: '/maintenance-admin/buildings', label: 'Buildings & Classrooms', icon: Building2 },
+          { to: '/maintenance-admin/reports', label: 'Maintenance Reports', icon: BarChart3 },
         ];
+      case 'supervisor':
       case 'system_admin':
         return [
-          { to: '/', label: 'System Overview', icon: LayoutDashboard, end: true },
+          { to: '/supervisor/dashboard', label: 'Supervisor Dashboard', icon: ShieldCheck },
+          { to: '/supervisor/reviews', label: 'Completion Reviews', icon: FileCheck2 },
+          { to: '/supervisor/operations', label: 'Operations Monitoring', icon: LayoutDashboard },
+          { to: '/maintenance-admin/equipment', label: 'Equipment Inventory', icon: QrCode },
           { to: '/users', label: 'User Directory & Roles', icon: Users },
-          { to: '/equipment', label: 'Equipment & QR Labels', icon: QrCode },
-          { to: '/audit-logs', label: 'System Audit Logs', icon: FileText },
-          { to: '/analytics', label: 'Analytics & Reports', icon: BarChart3 },
+          { to: '/audit-logs', label: 'Security Audit Logs', icon: FileText },
         ];
       case 'student':
-      case 'faculty':
       default:
         return [
-          { to: '/', label: 'My Complaints', icon: LayoutDashboard, end: true },
-          { to: '/report', label: 'Report a Problem', icon: PlusCircle },
-          { to: '/scan', label: 'Scan Equipment QR', icon: QrCode },
+          { to: '/student/dashboard', label: 'Student Dashboard', icon: LayoutDashboard },
+          { to: '/student/report', label: 'Report a Problem', icon: PlusCircle },
+          { to: '/student/complaints', label: 'My Complaints', icon: ClipboardCheck },
+          { to: '/student/scan', label: 'Scan Equipment QR', icon: QrCode },
         ];
     }
   };
@@ -58,7 +72,7 @@ export function Sidebar() {
     <aside className="w-64 bg-white border-r border-stone-200 hidden md:flex md:flex-col shrink-0 min-h-[calc(100vh-4rem)]">
       <div className="p-4 space-y-1">
         <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
-          Navigation
+          Navigation Portal
         </div>
         {links.map((link) => {
           const Icon = link.icon;
@@ -66,7 +80,6 @@ export function Sidebar() {
             <NavLink
               key={link.to}
               to={link.to}
-              end={link.end}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition ${
                   isActive
@@ -84,8 +97,8 @@ export function Sidebar() {
 
       <div className="mt-auto p-4 border-t border-stone-100">
         <div className="bg-stone-50 rounded-lg p-3 text-[11px] text-stone-500 border border-stone-200/60">
-          <p className="font-semibold text-stone-800">Campus Helpdesk</p>
-          <p className="mt-0.5">Emergency electrical hazards: Dial 100 or notify campus security immediately.</p>
+          <p className="font-semibold text-stone-800">SRMIST Estate Office</p>
+          <p className="mt-0.5">Emergency electrical hazards: Dial 100 or call campus security.</p>
         </div>
       </div>
     </aside>

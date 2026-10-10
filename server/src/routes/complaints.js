@@ -16,10 +16,37 @@ const submitComplaintSchema = z.object({
 });
 
 const updateStatusSchema = z.object({
-  status: z.enum(['pending', 'in_progress', 'resolved', 'reopened']),
+  status: z.enum([
+    'submitted',
+    'pending',
+    'under_review',
+    'assigned',
+    'in_progress',
+    'completion_submitted',
+    'resolved',
+    'reopened',
+    'rejected',
+    'cancelled'
+  ]),
   note: z.string().min(3).max(500),
   resolution_notes: z.string().max(1000).optional(),
-  completion_photo_url: z.string().url().optional().or(z.literal(''))
+  completion_photo_url: z.string().url().optional().or(z.literal('')),
+  reason: z.string().max(500).optional()
+});
+
+const completionSubmissionSchema = z.object({
+  completion_notes: z.string().min(5).max(1000),
+  completion_evidence_url: z.string().url().optional().or(z.literal('')),
+  note: z.string().max(250).optional()
+});
+
+const supervisorReviewSchema = z.object({
+  decision: z.enum(['approve', 'return_for_rework']),
+  decision_notes: z.string().min(3).max(500)
+});
+
+const reasonSchema = z.object({
+  reason: z.string().min(5).max(500)
 });
 
 const assignTechnicianSchema = z.object({
@@ -34,10 +61,16 @@ const feedbackSchema = z.object({
 
 // Allowed status transitions state machine
 const ALLOWED_TRANSITIONS = {
-  pending: ['in_progress'],
-  in_progress: ['resolved'],
+  submitted: ['under_review', 'assigned', 'rejected', 'cancelled'],
+  pending: ['under_review', 'assigned', 'in_progress', 'rejected', 'cancelled'],
+  under_review: ['assigned', 'rejected', 'cancelled'],
+  assigned: ['in_progress', 'cancelled'],
+  in_progress: ['completion_submitted', 'resolved', 'cancelled'],
+  completion_submitted: ['resolved', 'in_progress'], // Approved by supervisor/admin or returned for rework
   resolved: ['reopened'],
-  reopened: ['in_progress', 'resolved']
+  reopened: ['assigned', 'in_progress', 'under_review'],
+  rejected: [],
+  cancelled: []
 };
 
 /**
@@ -440,6 +473,176 @@ router.post('/:id/feedback', requireAuth, async (req, res, next) => {
       success: true,
       message: 'Thank you for submitting resolution feedback',
       data
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/v1/complaints/:id/completion - Technician submits work order completion
+router.post('/:id/completion', requireAuth, requireRole('technician', 'admin', 'maintenance_admin', 'supervisor'), async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { completion_notes, completion_evidence_url, note } = completionSubmissionSchema.parse(req.body);
+
+    if (!isSupabaseConfigured) {
+      return res.json({ success: true, message: 'Completion submitted for review (preview mode)' });
+    }
+
+    const { error } = await req.userClient
+      .from('complaints')
+      .update({
+        status: 'completion_submitted',
+        completion_notes,
+        completion_evidence_url: completion_evidence_url || null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await req.userClient
+      .from('complaint_status_history')
+      .insert({
+        complaint_id: id,
+        old_status: 'in_progress',
+        new_status: 'completion_submitted',
+        changed_by: req.user.id,
+        note: note || `Completion submitted: ${completion_notes.slice(0, 100)}`
+      });
+
+    res.json({
+      success: true,
+      message: 'Repair completion submitted for supervisor review'
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/v1/complaints/:id/supervisor-review - Supervisor approves or requests rework
+router.post('/:id/supervisor-review', requireAuth, requireRole('supervisor', 'maintenance_admin', 'admin', 'system_admin'), async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { decision, decision_notes } = supervisorReviewSchema.parse(req.body);
+
+    if (!isSupabaseConfigured) {
+      return res.json({ success: true, message: `Review completed: ${decision}` });
+    }
+
+    const newStatus = decision === 'approve' ? 'resolved' : 'in_progress';
+
+    const updatePayload = {
+      status: newStatus,
+      supervisor_id: req.user.id,
+      supervisor_decision_note: decision_notes,
+      supervisor_reviewed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    if (decision === 'approve') {
+      updatePayload.resolved_at = new Date().toISOString();
+    }
+
+    const { error } = await req.userClient
+      .from('complaints')
+      .update(updatePayload)
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await req.userClient
+      .from('complaint_status_history')
+      .insert({
+        complaint_id: id,
+        old_status: 'completion_submitted',
+        new_status: newStatus,
+        changed_by: req.user.id,
+        note: `Supervisor ${decision === 'approve' ? 'Approved' : 'Returned for Rework'}: ${decision_notes}`
+      });
+
+    res.json({
+      success: true,
+      message: decision === 'approve' ? 'Complaint approved and marked resolved' : 'Returned to technician for rework',
+      status: newStatus
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/v1/complaints/:id/reject - Reject invalid ticket with reason
+router.post('/:id/reject', requireAuth, requireRole('maintenance_admin', 'admin', 'supervisor', 'system_admin'), async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { reason } = reasonSchema.parse(req.body);
+
+    if (!isSupabaseConfigured) {
+      return res.json({ success: true, message: 'Ticket rejected with reason' });
+    }
+
+    const { error } = await req.userClient
+      .from('complaints')
+      .update({
+        status: 'rejected',
+        rejection_reason: reason,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await req.userClient
+      .from('complaint_status_history')
+      .insert({
+        complaint_id: id,
+        new_status: 'rejected',
+        changed_by: req.user.id,
+        note: `Rejected by administrator: ${reason}`
+      });
+
+    res.json({
+      success: true,
+      message: 'Complaint rejected with documented reason'
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/v1/complaints/:id/cancel - Cancel ticket with reason
+router.post('/:id/cancel', requireAuth, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { reason } = reasonSchema.parse(req.body);
+
+    if (!isSupabaseConfigured) {
+      return res.json({ success: true, message: 'Ticket cancelled' });
+    }
+
+    const { error } = await req.userClient
+      .from('complaints')
+      .update({
+        status: 'cancelled',
+        cancellation_reason: reason,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await req.userClient
+      .from('complaint_status_history')
+      .insert({
+        complaint_id: id,
+        new_status: 'cancelled',
+        changed_by: req.user.id,
+        note: `Cancelled: ${reason}`
+      });
+
+    res.json({
+      success: true,
+      message: 'Complaint cancelled successfully'
     });
   } catch (err) {
     next(err);
