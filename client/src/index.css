@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-stone-50 text-stone-900 font-sans;
+  }
+}
+
+/* Custom editorial campus utility styles */
+.badge-status {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium tracking-wide;
+}
+
+.badge-pending {
+  @apply bg-amber-50 text-amber-800 border border-amber-200;
+}
+
+.badge-in_progress {
+  @apply bg-sky-50 text-sky-800 border border-sky-200;
+}
+
+.badge-resolved {
+  @apply bg-emerald-50 text-emerald-800 border border-emerald-200;
+}
+
+.badge-reopened {
+  @apply bg-rose-50 text-rose-800 border border-rose-200;
+}
+
+.badge-priority-urgent {
+  @apply bg-rose-100 text-rose-800 border border-rose-300 font-semibold;
+}
+
+.badge-priority-high {
+  @apply bg-orange-100 text-orange-800 border border-orange-200;
+}
+
+.badge-priority-medium {
+  @apply bg-amber-100 text-amber-800 border border-amber-200;
+}
+
+.badge-priority-low {
+  @apply bg-stone-100 text-stone-700 border border-stone-200;
+}
+
+/* Print layout for QR stickers */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-qr-zone, #printable-qr-zone * {
+    visibility: visible;
+  }
+  #printable-qr-zone {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
