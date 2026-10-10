@@ -1,7 +1,18 @@
 import { supabase, isSupabaseConfigured, createUserClient } from '../lib/supabase.js';
 
+export const SRMIST_DOMAIN = '@srmist.edu.in';
+
 /**
- * Middleware: Verify Supabase JWT token and attach verified profile
+ * Validates if an email address belongs to the official SRMIST institutional domain
+ */
+export function isSrmistEmail(email) {
+  if (!email || typeof email !== 'string') return false;
+  return email.trim().toLowerCase().endsWith(SRMIST_DOMAIN);
+}
+
+/**
+ * Middleware: Verify Supabase JWT token, enforce @srmist.edu.in institutional domain,
+ * and attach verified profile & role from trusted database state
  */
 export async function requireAuth(req, res, next) {
   try {
@@ -24,17 +35,28 @@ export async function requireAuth(req, res, next) {
       });
     }
 
-    // Verify token with Supabase
+    // Verify token with Supabase Auth
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user) {
       return res.status(401).json({
         success: false,
         error: 'Unauthorized',
-        message: 'Invalid or expired session token'
+        message: 'Invalid or expired session token. Please sign in again.'
       });
     }
 
-    // Fetch verified profile from database
+    // 1. ENFORCE SRMIST INSTITUTIONAL DOMAIN RESTRICTION
+    const allowNonSrmist = process.env.ALLOW_NON_SRMIST_EMAILS === 'true';
+    if (!allowNonSrmist && !isSrmistEmail(user.email)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Unauthorized Domain',
+        message: `Access is strictly restricted to verified SRMIST institutional accounts (${SRMIST_DOMAIN}). Unauthorized email: ${user.email}`
+      });
+    }
+
+    // 2. FETCH VERIFIED PROFILE FROM TRUSTED DATABASE RECORD
+    // Do NOT trust user role supplied by client request
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, full_name, email, role, is_active')
@@ -45,19 +67,20 @@ export async function requireAuth(req, res, next) {
       return res.status(403).json({
         success: false,
         error: 'Forbidden',
-        message: 'User profile not found in campus database'
+        message: 'User profile not found in campus database. Contact an administrator.'
       });
     }
 
+    // 3. CHECK ACCOUNT ACTIVATION STATUS
     if (!profile.is_active) {
       return res.status(403).json({
         success: false,
         error: 'Account Inactive',
-        message: 'Your campus account has been deactivated. Contact an administrator.'
+        message: 'Your SRMIST maintenance account has been deactivated. Contact the estate maintenance office.'
       });
     }
 
-    // Attach to request
+    // Attach verified identity to request
     req.user = user;
     req.profile = profile;
     req.accessToken = token;
@@ -70,7 +93,7 @@ export async function requireAuth(req, res, next) {
 }
 
 /**
- * Middleware: Enforce role-based access control
+ * Middleware: Enforce role-based access control based on trusted database profile
  * @param  {...string} allowedRoles Allowed roles (e.g. 'admin', 'technician')
  */
 export function requireRole(...allowedRoles) {

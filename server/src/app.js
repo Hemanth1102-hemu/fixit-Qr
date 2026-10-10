@@ -9,6 +9,7 @@ import equipmentRouter from './routes/equipment.js';
 import complaintsRouter from './routes/complaints.js';
 import buildingsRouter from './routes/buildings.js';
 import adminRouter from './routes/admin.js';
+import classroomRouter from './routes/classroom.js';
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use('/api/v1/equipment', equipmentRouter);
 app.use('/api/v1/complaints', complaintsRouter);
 app.use('/api/v1/buildings', buildingsRouter);
 app.use('/api/v1/admin', adminRouter);
+app.use('/api/v1/classroom', classroomRouter);
 
 // 404 Catch-all
 app.use('/api/*', (req, res) => {

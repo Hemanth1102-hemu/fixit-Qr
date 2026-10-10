@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { QrCode, ArrowLeft, Send, AlertTriangle, ShieldAlert, Camera } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { QrCode, ArrowLeft, Send, AlertTriangle, ShieldAlert, Camera, Building2, MapPin } from 'lucide-react';
 import { apiRequest } from '../lib/api';
 
 export function ReportProblem() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const prefillRoom = location.state?.prefillRoom;
+
   const [equipmentId, setEquipmentId] = useState('90000001-0000-4000-8000-000000000001');
   const [category, setCategory] = useState('Electrical');
   const [title, setTitle] = useState('');
@@ -15,8 +18,8 @@ export function ReportProblem() {
   const [error, setError] = useState('');
 
   const sampleEquipments = [
-    { id: '90000001-0000-4000-8000-000000000001', name: 'Ceiling Fan Front-Left (SEC LH-101)' },
-    { id: '90000002-0000-4000-8000-000000000002', name: 'Overhead 4K Projector (SEC LH-101)' },
+    { id: '90000001-0000-4000-8000-000000000001', name: 'Ceiling Fan Front-Left (SEC LH-101 / TP-401)' },
+    { id: '90000002-0000-4000-8000-000000000002', name: 'Overhead 4K Projector (SEC LH-101 / TP-401)' },
     { id: '90000003-0000-4000-8000-000000000003', name: 'Air Conditioner Split 2-Ton (RCC LAB-1)' },
     { id: '90000004-0000-4000-8000-000000000004', name: 'Main Power Switchboard 16A (RCC LAB-1)' },
     { id: '90000005-0000-4000-8000-000000000005', name: 'LED Panel Light Center (CUL READING-2A)' }
@@ -67,6 +70,20 @@ export function ReportProblem() {
             Report broken infrastructure, safety hazards, or equipment malfunctions
           </p>
         </div>
+
+        {prefillRoom && (
+          <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-amber-700 shrink-0" />
+              <span>
+                Pre-selected SRMIST Timetable Classroom: <strong>{prefillRoom.building_name} ({prefillRoom.room_number})</strong>
+              </span>
+            </div>
+            <span className="text-[10px] font-semibold bg-amber-200/60 text-amber-900 px-2 py-0.5 rounded">
+              Institutional Sync
+            </span>
+          </div>
+        )}
 
         {error && (
           <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-2">

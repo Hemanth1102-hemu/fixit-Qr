@@ -34,11 +34,20 @@ export function StudentDashboard() {
   const [reopenNote, setReopenNote] = useState('');
   const [actionSuccess, setActionSuccess] = useState('');
 
+  // SRMIST Classroom Integration state
+  const [classroomAllocation, setClassroomAllocation] = useState(null);
+
   const fetchMyComplaints = async () => {
     setLoading(true);
     try {
-      const res = await apiRequest('/complaints/mine');
+      const [res, classRes] = await Promise.all([
+        apiRequest('/complaints/mine'),
+        apiRequest('/classroom/my-allocation').catch(() => ({ data: null }))
+      ]);
       setComplaints(res.data || []);
+      if (classRes && classRes.data) {
+        setClassroomAllocation(classRes.data);
+      }
     } catch {
       // Mock sample for initial preview
       setComplaints([
@@ -81,6 +90,26 @@ export function StudentDashboard() {
           }
         }
       ]);
+      // Mock SRMIST classroom integration data for preview
+      setClassroomAllocation({
+        has_active_allocation: true,
+        institutional_record: {
+          department: 'Computer Science & Engineering',
+          reg_or_emp_no: 'RA2111003010482',
+          section: 'CSE-A (Final Year)'
+        },
+        current_room: {
+          building_name: 'Tech Park (TP)',
+          building_code: 'TP',
+          floor_number: 4,
+          room_number: 'TP-401',
+          session_type: 'Software Lab / Theory'
+        },
+        suggested_equipment: [
+          { id: '90000001-0000-4000-8000-000000000001', equipment_name: 'Ceiling Fan Front-Left', asset_code: 'TP-401-FAN-01' },
+          { id: '90000002-0000-4000-8000-000000000002', equipment_name: 'Overhead 4K Projector', asset_code: 'TP-401-PRJ-01' }
+        ]
+      });
     } finally {
       setLoading(false);
     }
@@ -149,9 +178,14 @@ export function StudentDashboard() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+              SRMIST Campus Portal
+            </span>
+          </div>
           <h1 className="text-xl font-bold tracking-tight text-stone-900">Reporter Dashboard</h1>
           <p className="text-xs text-stone-500 mt-0.5">
-            Track real-time maintenance requests lodged for campus classrooms and labs
+            Lodge and track equipment maintenance tickets for SRMIST classrooms, labs, and amenities
           </p>
         </div>
         <Link
@@ -167,6 +201,49 @@ export function StudentDashboard() {
         <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{actionSuccess}</span>
+        </div>
+      )}
+
+      {/* SRMIST CLASSROOM TIMETABLE ALLOCATION WIDGET */}
+      {classroomAllocation && classroomAllocation.has_active_allocation && (
+        <div className="bg-gradient-to-r from-amber-50/70 via-stone-50 to-white border border-amber-200/90 rounded-2xl p-5 shadow-sm space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-100 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                Current Scheduled Classroom (SRMIST Timetable Sync)
+              </h3>
+            </div>
+            <span className="text-[11px] text-amber-800 font-medium bg-amber-100/60 px-2 py-0.5 rounded">
+              {classroomAllocation.institutional_record?.department} • {classroomAllocation.institutional_record?.section}
+            </span>
+          </div>
+
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-bold text-stone-900">
+                <Building2 className="w-4 h-4 text-amber-700" />
+                <span>{classroomAllocation.current_room?.building_name}</span>
+                <span className="text-stone-400">•</span>
+                <MapPin className="w-4 h-4 text-amber-700" />
+                <span>Room {classroomAllocation.current_room?.room_number}</span>
+              </div>
+              <p className="text-xs text-stone-500">
+                Active Session: <strong className="text-stone-700">{classroomAllocation.current_room?.session_type}</strong> (Reg/Emp: {classroomAllocation.institutional_record?.reg_or_emp_no})
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link
+                to="/report"
+                state={{ prefillRoom: classroomAllocation.current_room }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold shadow-sm transition"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                <span>Report Fault in This Classroom</span>
+              </Link>
+            </div>
+          </div>
         </div>
       )}
 
