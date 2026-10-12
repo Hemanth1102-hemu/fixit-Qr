@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
 import { StatusBadge, PriorityBadge } from '../components/Badges';
+import { EmptyState } from '../components/EmptyState';
 import { apiRequest } from '../lib/api';
 
 export function SupervisorDashboard() {
@@ -37,45 +38,18 @@ export function SupervisorDashboard() {
       setData(opsRes.data);
       setReviews(revRes.data || []);
     } catch {
-      // Mock demonstration data
       setData({
         metrics: {
-          activeComplaints: 14,
-          completionReviewsPending: 2,
-          urgentEscalations: 1,
+          activeComplaints: 0,
+          completionReviewsPending: 0,
+          urgentEscalations: 0,
           overdueTickets: 0,
-          reopenedTickets: 1,
-          avgResolutionHours: 11.8
+          reopenedTickets: 0,
+          avgResolutionHours: 0
         },
-        urgentEscalations: [
-          {
-            id: 'esc-1',
-            complaint_number: 'CMP-202610-1049',
-            title: 'Main Power Switchboard 16A burning smell and spark',
-            priority: 'urgent',
-            status: 'in_progress',
-            created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
-            room: 'LAB-1',
-            building: 'Ramanujan Computing Center'
-          }
-        ]
+        urgentEscalations: []
       });
-
-      setReviews([
-        {
-          id: 'rev-1',
-          complaint_number: 'CMP-202610-0988',
-          title: 'Overhead 4K Projector HDMI repair',
-          status: 'completion_submitted',
-          completion_notes: 'Replaced ceiling HDMI cable and aligned lens mount. Tested on full 4K output.',
-          completion_evidence_url: 'https://images.example.com/repair-verified.jpg',
-          created_at: new Date(Date.now() - 3600000 * 6).toISOString(),
-          equipment: {
-            equipment_name: 'Overhead 4K Projector',
-            asset_code: 'SEC-LH101-PRJ-01'
-          }
-        }
-      ]);
+      setReviews([]);
     } finally {
       setLoading(false);
     }
@@ -165,8 +139,12 @@ export function SupervisorDashboard() {
         </div>
 
         {reviews.length === 0 ? (
-          <div className="p-8 text-center text-xs text-stone-500">
-            No completed jobs waiting for supervisor sign-off at this time.
+          <div className="p-8">
+            <EmptyState
+              icon={CheckCircle2}
+              title="Review queue is clear"
+              description="No completed repair tickets currently awaiting supervisor inspection or sign-off."
+            />
           </div>
         ) : (
           <div className="divide-y divide-stone-100">

@@ -11,6 +11,7 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
+import { EmptyState } from '../components/EmptyState';
 import { apiRequest } from '../lib/api';
 
 export function SystemAdminDashboard() {
@@ -37,20 +38,8 @@ export function SystemAdminDashboard() {
       setUsers(usersRes.data || []);
       setAuditLogs(logsRes.data || []);
     } catch {
-      // Mock data for preview
-      setUsers([
-        { id: 'u-1', full_name: 'Campus System Admin', email: 'sysadmin@campus.edu', role: 'system_admin', is_active: true, created_at: '2024-01-15' },
-        { id: 'u-2', full_name: 'Dr. Aris Thorne (Estate Officer)', email: 'admin@campus.edu', role: 'admin', is_active: true, created_at: '2024-02-01' },
-        { id: 'u-3', full_name: 'Suresh Kumar (Electrician)', email: 'tech@campus.edu', role: 'technician', is_active: true, created_at: '2024-03-10' },
-        { id: 'u-4', full_name: 'Rahul Sharma (B.Tech CS)', email: 'student@campus.edu', role: 'student', is_active: true, created_at: '2024-08-20' },
-        { id: 'u-5', full_name: 'Prof. Alok Mishra (Physics Dept)', email: 'faculty@campus.edu', role: 'faculty', is_active: true, created_at: '2024-04-12' }
-      ]);
-
-      setAuditLogs([
-        { id: 'l-1', action: 'EQUIPMENT_REGISTERED', entity_type: 'equipment', entity_id: 'eq-1', created_at: new Date(Date.now() - 3600000 * 2).toISOString(), actor: { full_name: 'Dr. Aris Thorne' } },
-        { id: 'l-2', action: 'STATUS_TRANSITION_RESOLVED', entity_type: 'complaints', entity_id: 'CMP-202610-0988', created_at: new Date(Date.now() - 3600000 * 10).toISOString(), actor: { full_name: 'Suresh Kumar' } },
-        { id: 'l-3', action: 'TECHNICIAN_ASSIGNED', entity_type: 'complaint_assignments', entity_id: 'CMP-202610-1049', created_at: new Date(Date.now() - 3600000 * 14).toISOString(), actor: { full_name: 'Dr. Aris Thorne' } }
-      ]);
+      setUsers([]);
+      setAuditLogs([]);
     } finally {
       setLoading(false);
     }
@@ -148,84 +137,104 @@ export function SystemAdminDashboard() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-stone-700">
-              <thead className="bg-stone-50 text-[11px] font-semibold uppercase tracking-wider text-stone-500 border-b border-stone-200">
-                <tr>
-                  <th className="px-4 py-3">Campus User</th>
-                  <th className="px-4 py-3">Email Address</th>
-                  <th className="px-4 py-3">Assigned Role</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-stone-100">
-                {filteredUsers.map((u) => (
-                  <tr key={u.id} className="hover:bg-stone-50/70 transition">
-                    <td className="px-4 py-3 font-semibold text-stone-900">{u.full_name}</td>
-                    <td className="px-4 py-3 text-stone-500">{u.email}</td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-0.5 rounded font-mono text-[11px] font-medium bg-stone-100 text-stone-800 border border-stone-200 capitalize">
-                        {u.role.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${u.is_active ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'}`}>
-                        {u.is_active ? 'Active' : 'Disabled'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedUser(u);
-                          setNewRole(u.role);
-                          setIsActiveStatus(u.is_active);
-                        }}
-                        className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold rounded text-[11px] transition"
-                      >
-                        Edit Role & Permissions
-                      </button>
-                    </td>
+          {filteredUsers.length === 0 ? (
+            <div className="p-8">
+              <EmptyState
+                icon={Users}
+                title="No campus users found"
+                description={searchUser ? "No users match your search criteria." : "No provisioned campus profiles registered in the system yet."}
+              />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-stone-700">
+                <thead className="bg-stone-50 text-[11px] font-semibold uppercase tracking-wider text-stone-500 border-b border-stone-200">
+                  <tr>
+                    <th className="px-4 py-3">Campus User</th>
+                    <th className="px-4 py-3">Email Address</th>
+                    <th className="px-4 py-3">Assigned Role</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {filteredUsers.map((u) => (
+                    <tr key={u.id} className="hover:bg-stone-50/70 transition">
+                      <td className="px-4 py-3 font-semibold text-stone-900">{u.full_name}</td>
+                      <td className="px-4 py-3 text-stone-500">{u.email}</td>
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-0.5 rounded font-mono text-[11px] font-medium bg-stone-100 text-stone-800 border border-stone-200 capitalize">
+                          {u.role.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${u.is_active ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'}`}>
+                          {u.is_active ? 'Active' : 'Disabled'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setNewRole(u.role);
+                            setIsActiveStatus(u.is_active);
+                          }}
+                          className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold rounded text-[11px] transition"
+                        >
+                          Edit Role & Permissions
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       ) : (
         /* Audit Logs Table */
         <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-stone-700">
-              <thead className="bg-stone-50 text-[11px] font-semibold uppercase tracking-wider text-stone-500 border-b border-stone-200">
-                <tr>
-                  <th className="px-4 py-3">Timestamp</th>
-                  <th className="px-4 py-3">Security Action</th>
-                  <th className="px-4 py-3">Entity Type</th>
-                  <th className="px-4 py-3">Actor</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-stone-100 font-mono text-[11px]">
-                {auditLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-stone-50/70 transition">
-                    <td className="px-4 py-3 text-stone-500">
-                      {new Date(log.created_at).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3 font-semibold text-stone-900">
-                      {log.action}
-                    </td>
-                    <td className="px-4 py-3 text-stone-600">
-                      {log.entity_type} ({log.entity_id})
-                    </td>
-                    <td className="px-4 py-3 text-amber-800">
-                      {log.actor?.full_name || 'System Daemon'}
-                    </td>
+          {auditLogs.length === 0 ? (
+            <div className="p-8">
+              <EmptyState
+                icon={FileText}
+                title="No security audit events"
+                description="The audit log is empty. Security transitions, equipment modifications, and role updates will be logged here automatically."
+              />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-stone-700">
+                <thead className="bg-stone-50 text-[11px] font-semibold uppercase tracking-wider text-stone-500 border-b border-stone-200">
+                  <tr>
+                    <th className="px-4 py-3">Timestamp</th>
+                    <th className="px-4 py-3">Security Action</th>
+                    <th className="px-4 py-3">Entity Type</th>
+                    <th className="px-4 py-3">Actor</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-stone-100 font-mono text-[11px]">
+                  {auditLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-stone-50/70 transition">
+                      <td className="px-4 py-3 text-stone-500">
+                        {new Date(log.created_at).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-stone-900">
+                        {log.action}
+                      </td>
+                      <td className="px-4 py-3 text-stone-600">
+                        {log.entity_type} ({log.entity_id})
+                      </td>
+                      <td className="px-4 py-3 text-amber-800">
+                        {log.actor?.full_name || 'System Daemon'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 

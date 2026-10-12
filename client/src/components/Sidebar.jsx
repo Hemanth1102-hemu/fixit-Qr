@@ -13,12 +13,18 @@ import {
   History,
   ShieldCheck,
   FileCheck2,
-  FolderOpen
+  FolderOpen,
+  AlertOctagon,
+  Activity,
+  Bell,
+  Sliders,
+  User,
+  LogOut
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function Sidebar() {
-  const { role } = useAuth();
+  const { role, signOut } = useAuth();
 
   const getLinks = () => {
     switch (role) {
@@ -48,12 +54,18 @@ export function Sidebar() {
       case 'supervisor':
       case 'system_admin':
         return [
-          { to: '/supervisor/dashboard', label: 'Supervisor Dashboard', icon: ShieldCheck },
-          { to: '/supervisor/reviews', label: 'Completion Reviews', icon: FileCheck2 },
-          { to: '/supervisor/operations', label: 'Operations Monitoring', icon: LayoutDashboard },
-          { to: '/maintenance-admin/equipment', label: 'Equipment Inventory', icon: QrCode },
-          { to: '/users', label: 'User Directory & Roles', icon: Users },
-          { to: '/audit-logs', label: 'Security Audit Logs', icon: FileText },
+          { to: '/supervisor/dashboard', label: 'Operations Overview', icon: LayoutDashboard },
+          { to: '/supervisor/complaints', label: 'All Complaints', icon: ClipboardCheck },
+          { to: '/supervisor/escalations', label: 'Urgent & Escalations', icon: AlertOctagon },
+          { to: '/supervisor/completion-review', label: 'Completion Reviews', icon: FileCheck2 },
+          { to: '/supervisor/team-performance', label: 'Team Performance', icon: Users },
+          { to: '/supervisor/equipment-health', label: 'Equipment Health', icon: Activity },
+          { to: '/supervisor/locations', label: 'Campus Locations', icon: Building2 },
+          { to: '/supervisor/analytics', label: 'Analytics & Reports', icon: BarChart3 },
+          { to: '/supervisor/notifications', label: 'Supervisor Alerts', icon: Bell },
+          { to: '/supervisor/audit-logs', label: 'Audit History', icon: FileText },
+          { to: '/supervisor/policies', label: 'Policy Settings', icon: Sliders },
+          { to: '/supervisor/profile', label: 'Supervisor Profile', icon: User },
         ];
       case 'student':
       default:
@@ -67,12 +79,13 @@ export function Sidebar() {
   };
 
   const links = getLinks();
+  const isSupervisor = role === 'supervisor' || role === 'system_admin';
 
   return (
     <aside className="w-64 bg-white border-r border-stone-200 hidden md:flex md:flex-col shrink-0 min-h-[calc(100vh-4rem)]">
-      <div className="p-4 space-y-1">
+      <div className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-8rem)]">
         <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
-          Navigation Portal
+          {isSupervisor ? 'Supervisor Executive Suite' : 'Navigation Portal'}
         </div>
         {links.map((link) => {
           const Icon = link.icon;
@@ -81,7 +94,7 @@ export function Sidebar() {
               key={link.to}
               to={link.to}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition ${
+                `flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition ${
                   isActive
                     ? 'bg-amber-50 text-amber-900 font-semibold border-l-4 border-amber-600'
                     : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
@@ -96,9 +109,20 @@ export function Sidebar() {
       </div>
 
       <div className="mt-auto p-4 border-t border-stone-100">
-        <div className="bg-stone-50 rounded-lg p-3 text-[11px] text-stone-500 border border-stone-200/60">
-          <p className="font-semibold text-stone-800">SRMIST Estate Office</p>
-          <p className="mt-0.5">Emergency electrical hazards: Dial 100 or call campus security.</p>
+        <div className="bg-stone-50 rounded-lg p-3 text-[11px] text-stone-500 border border-stone-200/60 flex items-center justify-between">
+          <div>
+            <p className="font-semibold text-stone-800">SRMIST Estate Office</p>
+            <p className="text-[10px] text-stone-400">Kattankulathur Campus</p>
+          </div>
+          {isSupervisor && (
+            <button
+              onClick={() => signOut()}
+              title="Sign Out"
+              className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </aside>

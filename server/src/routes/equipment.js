@@ -23,27 +23,103 @@ router.get('/:qrToken', async (req, res, next) => {
     const { qrToken } = req.params;
 
     if (!isSupabaseConfigured) {
-      // Mock preview response for initial UI verification before DB credentials configured
-      return res.json({
-        success: true,
-        data: {
-          id: 'demo-equip-1',
-          equipment_name: 'Ceiling Fan Front-Left',
-          asset_code: 'SEC-LH101-FAN-01',
+      const TEST_CATALOG = {
+        'qr_tp_401_fan01_9a1b2c': {
+          id: '90000001-0001-4000-8000-000000000001',
+          equipment_name: 'Ceiling Fan Front-Left (High Speed)',
+          asset_code: 'SRM-TP-401-FAN-01',
           equipment_type: 'Electrical',
-          description: 'Crompton 1200mm high speed ceiling fan',
-          qr_token: qrToken,
+          description: 'Crompton 1200mm high speed ceiling fan in Software Lab',
+          qr_token: 'qr_tp_401_fan01_9a1b2c',
           is_active: true,
           room: {
-            room_number: 'LH-101',
+            room_number: 'TP-401',
+            floor_number: 4,
+            building: { building_name: 'Tech Park', building_code: 'TP' }
+          },
+          openComplaintsCount: 0
+        },
+        'qr_tp_502_prj01_8b3d4f': {
+          id: '90000001-0002-4000-8000-000000000002',
+          equipment_name: 'Overhead 4K Projector Rear',
+          asset_code: 'SRM-TP-502-PRJ-01',
+          equipment_type: 'Electronics',
+          description: 'Epson 4K ceiling mounted digital projector in AI Seminar Hall',
+          qr_token: 'qr_tp_502_prj01_8b3d4f',
+          is_active: true,
+          room: {
+            room_number: 'TP-502',
+            floor_number: 5,
+            building: { building_name: 'Tech Park', building_code: 'TP' }
+          },
+          openComplaintsCount: 0
+        },
+        'qr_ub_201_ac01_7e2a9b': {
+          id: '90000001-0003-4000-8000-000000000003',
+          equipment_name: 'Split AC 2-Ton Inverter',
+          asset_code: 'SRM-UB-201-AC-01',
+          equipment_type: 'HVAC',
+          description: 'Daikin 2-Ton inverter split AC in Main Lecture Theatre',
+          qr_token: 'qr_ub_201_ac01_7e2a9b',
+          is_active: true,
+          room: {
+            room_number: 'UB-201',
+            floor_number: 2,
+            building: { building_name: 'University Building', building_code: 'UB' }
+          },
+          openComplaintsCount: 0
+        },
+        'qr_btb_104_dsp01_6f4c8a': {
+          id: '90000001-0004-4000-8000-000000000004',
+          equipment_name: 'Digital Interactive Smart Board 75"',
+          asset_code: 'SRM-BTB-104-DSP-01',
+          equipment_type: 'Electronics',
+          description: 'Samsung 75-inch touch interactive screen in Molecular Lab',
+          qr_token: 'qr_btb_104_dsp01_6f4c8a',
+          is_active: true,
+          room: {
+            room_number: 'BTB-104',
             floor_number: 1,
-            building: {
-              building_name: 'Science & Engineering Complex',
-              building_code: 'SEC'
-            }
+            building: { building_name: 'Bio Tech Block', building_code: 'BTB' }
+          },
+          openComplaintsCount: 0
+        },
+        'qr_tp2_305_swb01_5d1e7c': {
+          id: '90000001-0005-4000-8000-000000000005',
+          equipment_name: 'Main 32A Modular Power Switchboard',
+          asset_code: 'SRM-TP2-305-SWB-01',
+          equipment_type: 'Electrical',
+          description: 'Legrand 32A heavy-duty modular power panel in Cloud Computing Center',
+          qr_token: 'qr_tp2_305_swb01_5d1e7c',
+          is_active: true,
+          room: {
+            room_number: 'TP2-305',
+            floor_number: 3,
+            building: { building_name: 'Tech Park 2', building_code: 'TP2' }
           },
           openComplaintsCount: 0
         }
+      };
+
+      const matched = TEST_CATALOG[qrToken] || {
+        id: 'test-equip-custom',
+        equipment_name: 'Campus Equipment Asset',
+        asset_code: 'SRM-ASSET-01',
+        equipment_type: 'General',
+        description: 'SRMIST verified campus equipment',
+        qr_token: qrToken,
+        is_active: true,
+        room: {
+          room_number: '101',
+          floor_number: 1,
+          building: { building_name: 'Main Campus', building_code: 'MAIN' }
+        },
+        openComplaintsCount: 0
+      };
+
+      return res.json({
+        success: true,
+        data: matched
       });
     }
 

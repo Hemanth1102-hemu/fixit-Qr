@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { QrCode, Bell, LogOut, User, Shield, Wrench, GraduationCap, CheckCircle2 } from 'lucide-react';
+import { QrCode, Bell, LogOut, User, Shield, Wrench, GraduationCap, CheckCircle2, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 import { ROLE_LABELS } from '../constants/routes';
@@ -41,7 +41,16 @@ export function Navbar({ onOpenScanner }) {
           </div>
 
           {/* Quick Scan & Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              to="/qr-test"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition"
+              title="View 5 Campus Test QR Codes"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span>5 Test QRs</span>
+            </Link>
+
             {onOpenScanner && (
               <button
                 type="button"
@@ -50,7 +59,7 @@ export function Navbar({ onOpenScanner }) {
                 title="Scan an equipment QR code"
               >
                 <QrCode className="w-4 h-4 text-amber-600" />
-                <span>Scan Equipment</span>
+                <span>Scan Camera</span>
               </button>
             )}
 

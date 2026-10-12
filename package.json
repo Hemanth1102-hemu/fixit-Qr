@@ -20,5 +20,8 @@
     "concurrently": "^8.2.2"
   },
   "author": "FixIt QR Academic Project",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "qrcode": "^1.5.4"
+  }
 }

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FixIt QR — 5 Campus Test QR Codes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fafaf9; margin: 0; padding: 24px; color: #1c1917; }
+    h1 { text-align: center; font-size: 24px; margin-bottom: 6px; }
+    p.sub { text-align: center; color: #78716c; margin-top: 0; margin-bottom: 24px; font-size: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
+    .card { background: white; border: 2px solid #e7e5e4; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+    .badge { display: inline-block; font-size: 11px; font-weight: bold; background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 6px; padding: 3px 8px; margin-bottom: 8px; text-transform: uppercase; }
+    .bldg { font-size: 13px; font-weight: 600; color: #44403c; margin-bottom: 4px; }
+    .room { font-size: 12px; color: #78716c; margin-bottom: 12px; }
+    .qr-img { width: 180px; height: 180px; border: 2px solid #1c1917; border-radius: 12px; padding: 8px; background: white; margin-bottom: 12px; }
+    .eq-name { font-size: 15px; font-weight: bold; color: #1c1917; margin-bottom: 4px; }
+    .asset { font-family: monospace; font-size: 12px; color: #b45309; font-weight: bold; margin-bottom: 14px; }
+    .btn { display: inline-block; padding: 8px 14px; font-size: 12px; font-weight: 600; text-decoration: none; border-radius: 8px; background: #d97706; color: white; transition: background 0.2s; }
+    .btn:hover { background: #b45309; }
+    @media print {
+      body { background: white; padding: 0; }
+      .grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      .btn, p.sub { display: none; }
+      .card { border: 2px dashed #78716c; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <h1>FixIt QR — 5 Campus Test QR Codes</h1>
+  <p class="sub">Scan any QR with your phone camera or web scanner to trigger instant complaint reporting</p>
+  <div style="text-align: center; margin-bottom: 20px;">
+    <button onclick="window.print()" style="padding: 10px 20px; font-size: 13px; font-weight: bold; background: #1c1917; color: white; border: none; border-radius: 8px; cursor: pointer;">
+      🖨️ Print All Stickers
+    </button>
+  </div>
+  <div class="grid">
+    
+      <div class="card">
+        <div>
+          <span class="badge">QR 1: Electrical</span>
+          <div class="bldg">Tech Park (TP)</div>
+          <div class="room">Room TP-401 (Fl 4)</div>
+          <img class="qr-img" src="./qr-1-tech-park-fan.png" alt="Ceiling Fan Front-Left (High Speed)" />
+          <div class="eq-name">Ceiling Fan Front-Left (High Speed)</div>
+          <div class="asset">SRM-TP-401-FAN-01</div>
+        </div>
+        <a class="btn" href="http://localhost:5173/equipment/qr_tp_401_fan01_9a1b2c" target="_blank">
+          Open Test Page ↗
+        </a>
+      </div>
+    
+      <div class="card">
+        <div>
+          <span class="badge">QR 2: Electronics</span>
+          <div class="bldg">Tech Park (TP)</div>
+          <div class="room">Room TP-502 (Fl 5)</div>
+          <img class="qr-img" src="./qr-2-tech-park-projector.png" alt="Overhead 4K Projector Rear" />
+          <div class="eq-name">Overhead 4K Projector Rear</div>
+          <div class="asset">SRM-TP-502-PRJ-01</div>
+        </div>
+        <a class="btn" href="http://localhost:5173/equipment/qr_tp_502_prj01_8b3d4f" target="_blank">
+          Open Test Page ↗
+        </a>
+      </div>
+    
+      <div class="card">
+        <div>
+          <span class="badge">QR 3: HVAC</span>
+          <div class="bldg">University Building (UB)</div>
+          <div class="room">Room UB-201 (Fl 2)</div>
+          <img class="qr-img" src="./qr-3-university-building-ac.png" alt="Split AC 2-Ton Inverter" />
+          <div class="eq-name">Split AC 2-Ton Inverter</div>
+          <div class="asset">SRM-UB-201-AC-01</div>
+        </div>
+        <a class="btn" href="http://localhost:5173/equipment/qr_ub_201_ac01_7e2a9b" target="_blank">
+          Open Test Page ↗
+        </a>
+      </div>
+    
+      <div class="card">
+        <div>
+          <span class="badge">QR 4: Electronics</span>
+          <div class="bldg">Bio Tech Block (BTB)</div>
+          <div class="room">Room BTB-104 (Fl 1)</div>
+          <img class="qr-img" src="./qr-4-bio-tech-block-smartboard.png" alt="Digital Interactive Smart Board 75"" />
+          <div class="eq-name">Digital Interactive Smart Board 75"</div>
+          <div class="asset">SRM-BTB-104-DSP-01</div>
+        </div>
+        <a class="btn" href="http://localhost:5173/equipment/qr_btb_104_dsp01_6f4c8a" target="_blank">
+          Open Test Page ↗
+        </a>
+      </div>
+    
+      <div class="card">
+        <div>
+          <span class="badge">QR 5: Electrical</span>
+          <div class="bldg">Tech Park 2 (TP2)</div>
+          <div class="room">Room TP2-305 (Fl 3)</div>
+          <img class="qr-img" src="./qr-5-tech-park-2-switchboard.png" alt="Main 32A Modular Power Switchboard" />
+          <div class="eq-name">Main 32A Modular Power Switchboard</div>
+          <div class="asset">SRM-TP2-305-SWB-01</div>
+        </div>
+        <a class="btn" href="http://localhost:5173/equipment/qr_tp2_305_swb01_5d1e7c" target="_blank">
+          Open Test Page ↗
+        </a>
+      </div>
+    
+  </div>
+</body>
+</html>

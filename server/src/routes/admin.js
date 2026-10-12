@@ -18,32 +18,21 @@ router.get('/analytics', requireAuth, requireRole('admin', 'system_admin'), asyn
         success: true,
         data: {
           metrics: {
-            totalComplaints: 12,
-            openComplaints: 5,
-            pendingAssignments: 3,
-            urgentIssues: 1,
-            resolvedComplaints: 7,
-            avgResolutionTimeHours: 14.5
+            totalComplaints: 0,
+            openComplaints: 0,
+            pendingAssignments: 0,
+            urgentIssues: 0,
+            resolvedComplaints: 0,
+            avgResolutionTimeHours: 0
           },
           statusCounts: {
-            pending: 3,
-            in_progress: 2,
-            resolved: 7,
+            pending: 0,
+            in_progress: 0,
+            resolved: 0,
             reopened: 0
           },
-          buildingCounts: [
-            { building_name: 'Science & Engineering Complex', count: 6 },
-            { building_name: 'Ramanujan Computing Center', count: 4 },
-            { building_name: 'Central University Library', count: 2 }
-          ],
-          repeatFailures: [
-            {
-              equipment_id: '90000001-0000-4000-8000-000000000001',
-              equipment_name: 'Ceiling Fan Front-Left',
-              asset_code: 'SEC-LH101-FAN-01',
-              complaint_count: 3
-            }
-          ]
+          buildingCounts: [],
+          repeatFailures: []
         }
       });
     }

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
 import { StatusBadge, PriorityBadge } from '../components/Badges';
+import { EmptyState } from '../components/EmptyState';
 import { apiRequest } from '../lib/api';
 
 export function AdminDashboard() {
@@ -45,82 +46,19 @@ export function AdminDashboard() {
       setComplaints(complaintsRes.data || []);
       setTechnicians(usersRes.data || []);
     } catch {
-      // Mock fallback for academic demonstration
       setAnalytics({
         metrics: {
-          totalComplaints: 28,
-          openComplaints: 9,
-          pendingAssignments: 4,
-          urgentIssues: 2,
-          resolvedComplaints: 19,
-          avgResolutionTimeHours: 12.4
+          totalComplaints: 0,
+          openComplaints: 0,
+          pendingAssignments: 0,
+          urgentIssues: 0,
+          resolvedComplaints: 0,
+          avgResolutionTimeHours: 0
         },
-        repeatFailures: [
-          {
-            id: 'eq-1',
-            equipment_name: 'Ceiling Fan Front-Left (LH-101)',
-            asset_code: 'SEC-LH101-FAN-01',
-            complaint_count: 3
-          },
-          {
-            id: 'eq-2',
-            equipment_name: 'Overhead 4K Projector (LH-101)',
-            asset_code: 'SEC-LH101-PRJ-01',
-            complaint_count: 2
-          }
-        ]
+        repeatFailures: []
       });
-
-      setComplaints([
-        {
-          id: 'cmp-1',
-          complaint_number: 'CMP-202610-1049',
-          title: 'AC unit blowing ambient air without cooling',
-          status: 'in_progress',
-          priority: 'urgent',
-          category: 'HVAC',
-          created_at: new Date(Date.now() - 3600000 * 3).toISOString(),
-          reporter_name: 'Rahul Sharma',
-          equipment_name: 'Air Conditioner Split 2-Ton',
-          asset_code: 'RCC-LAB1-AC-01',
-          room_number: 'LAB-1',
-          building_name: 'Ramanujan Computing Center'
-        },
-        {
-          id: 'cmp-2',
-          complaint_number: 'CMP-202610-1052',
-          title: 'Main Power Switchboard 16A socket burnt',
-          status: 'pending',
-          priority: 'urgent',
-          category: 'Electrical',
-          created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
-          reporter_name: 'Dr. Priya V.',
-          equipment_name: 'Main Power Switchboard 16A',
-          asset_code: 'RCC-LAB1-SWB-01',
-          room_number: 'LAB-1',
-          building_name: 'Ramanujan Computing Center'
-        },
-        {
-          id: 'cmp-3',
-          complaint_number: 'CMP-202610-0988',
-          title: 'LED Panel Light Center flickering',
-          status: 'resolved',
-          priority: 'low',
-          category: 'Lighting',
-          created_at: new Date(Date.now() - 3600000 * 40).toISOString(),
-          reporter_name: 'Ananya S.',
-          equipment_name: 'LED Panel Light Center',
-          asset_code: 'CUL-RD2A-LGT-01',
-          room_number: 'READING-2A',
-          building_name: 'Central University Library'
-        }
-      ]);
-
-      setTechnicians([
-        { id: 'tech-1', full_name: 'Suresh Kumar (Electrical)', email: 'suresh.elec@campus.edu' },
-        { id: 'tech-2', full_name: 'Ramesh Patel (HVAC & AC)', email: 'ramesh.hvac@campus.edu' },
-        { id: 'tech-3', full_name: 'David Wilson (Electronics & AV)', email: 'david.av@campus.edu' }
-      ]);
+      setComplaints([]);
+      setTechnicians([]);
     } finally {
       setLoading(false);
     }
@@ -300,54 +238,64 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-stone-700">
-            <thead className="bg-stone-50 text-[11px] font-semibold uppercase tracking-wider text-stone-500 border-b border-stone-200">
-              <tr>
-                <th className="px-4 py-3">Ticket</th>
-                <th className="px-4 py-3">Subject & Equipment</th>
-                <th className="px-4 py-3">Priority</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Location</th>
-                <th className="px-4 py-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-100">
-              {filteredComplaints.map((c) => (
-                <tr key={c.id} className="hover:bg-stone-50/70 transition">
-                  <td className="px-4 py-3.5 font-mono font-semibold text-stone-900 whitespace-nowrap">
-                    {c.complaint_number}
-                  </td>
-                  <td className="px-4 py-3.5 max-w-xs">
-                    <p className="font-bold text-stone-900 line-clamp-1">{c.title}</p>
-                    <p className="text-[11px] text-stone-500">
-                      {c.equipment?.equipment_name || c.equipment_name} ({c.category})
-                    </p>
-                  </td>
-                  <td className="px-4 py-3.5 whitespace-nowrap">
-                    <PriorityBadge priority={c.priority} />
-                  </td>
-                  <td className="px-4 py-3.5 whitespace-nowrap">
-                    <StatusBadge status={c.status} />
-                  </td>
-                  <td className="px-4 py-3.5 text-stone-500 whitespace-nowrap">
-                    Room {c.equipment?.rooms?.room_number || c.room_number || 'General'}
-                  </td>
-                  <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                    <button
-                      type="button"
-                      onClick={() => setAssignModalComplaint(c)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-800 text-[11px] font-semibold transition"
-                    >
-                      <UserCheck className="w-3.5 h-3.5 text-amber-700" />
-                      <span>Assign Staff</span>
-                    </button>
-                  </td>
+        {filteredComplaints.length === 0 ? (
+          <div className="p-8">
+            <EmptyState
+              icon={Wrench}
+              title="No complaints in queue"
+              description={search || statusFilter !== 'all' ? "No complaints match your active filter criteria." : "There are currently no active maintenance complaints registered in the system."}
+            />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-stone-700">
+              <thead className="bg-stone-50 text-[11px] font-semibold uppercase tracking-wider text-stone-500 border-b border-stone-200">
+                <tr>
+                  <th className="px-4 py-3">Ticket</th>
+                  <th className="px-4 py-3">Subject & Equipment</th>
+                  <th className="px-4 py-3">Priority</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Location</th>
+                  <th className="px-4 py-3 text-right">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-stone-100">
+                {filteredComplaints.map((c) => (
+                  <tr key={c.id} className="hover:bg-stone-50/70 transition">
+                    <td className="px-4 py-3.5 font-mono font-semibold text-stone-900 whitespace-nowrap">
+                      {c.complaint_number}
+                    </td>
+                    <td className="px-4 py-3.5 max-w-xs">
+                      <p className="font-bold text-stone-900 line-clamp-1">{c.title}</p>
+                      <p className="text-[11px] text-stone-500">
+                        {c.equipment?.equipment_name || c.equipment_name} ({c.category})
+                      </p>
+                    </td>
+                    <td className="px-4 py-3.5 whitespace-nowrap">
+                      <PriorityBadge priority={c.priority} />
+                    </td>
+                    <td className="px-4 py-3.5 whitespace-nowrap">
+                      <StatusBadge status={c.status} />
+                    </td>
+                    <td className="px-4 py-3.5 text-stone-500 whitespace-nowrap">
+                      Room {c.equipment?.rooms?.room_number || c.room_number || 'General'}
+                    </td>
+                    <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => setAssignModalComplaint(c)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-800 text-[11px] font-semibold transition"
+                      >
+                        <UserCheck className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Assign Staff</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Technician Assignment Modal */}

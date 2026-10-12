@@ -49,67 +49,8 @@ export function StudentDashboard() {
         setClassroomAllocation(classRes.data);
       }
     } catch {
-      // Mock sample for initial preview
-      setComplaints([
-        {
-          id: 'demo-cmp-101',
-          complaint_number: 'CMP-202610-4102',
-          title: 'Ceiling Fan Front-Left not turning',
-          description: 'Regulator turned to 5 but fan blades are stalled.',
-          status: 'pending',
-          priority: 'medium',
-          category: 'Electrical',
-          created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
-          equipment: {
-            equipment_name: 'Ceiling Fan Front-Left',
-            asset_code: 'SEC-LH101-FAN-01',
-            rooms: {
-              room_number: 'LH-101',
-              buildings: { building_name: 'Science & Engineering Complex' }
-            }
-          }
-        },
-        {
-          id: 'demo-cmp-102',
-          complaint_number: 'CMP-202610-3881',
-          title: 'Projector HDMI port flickering',
-          description: 'Projection cuts out every 30 seconds when laptop moved.',
-          status: 'resolved',
-          priority: 'high',
-          category: 'Electronics',
-          created_at: new Date(Date.now() - 3600000 * 48).toISOString(),
-          resolved_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-          resolution_notes: 'Replaced damaged ceiling HDMI extension cable with shielded cable.',
-          equipment: {
-            equipment_name: 'Overhead 4K Projector',
-            asset_code: 'SEC-LH101-PRJ-01',
-            rooms: {
-              room_number: 'LH-101',
-              buildings: { building_name: 'Science & Engineering Complex' }
-            }
-          }
-        }
-      ]);
-      // Mock SRMIST classroom integration data for preview
-      setClassroomAllocation({
-        has_active_allocation: true,
-        institutional_record: {
-          department: 'Computer Science & Engineering',
-          reg_or_emp_no: 'RA2111003010482',
-          section: 'CSE-A (Final Year)'
-        },
-        current_room: {
-          building_name: 'Tech Park (TP)',
-          building_code: 'TP',
-          floor_number: 4,
-          room_number: 'TP-401',
-          session_type: 'Software Lab / Theory'
-        },
-        suggested_equipment: [
-          { id: '90000001-0000-4000-8000-000000000001', equipment_name: 'Ceiling Fan Front-Left', asset_code: 'TP-401-FAN-01' },
-          { id: '90000002-0000-4000-8000-000000000002', equipment_name: 'Overhead 4K Projector', asset_code: 'TP-401-PRJ-01' }
-        ]
-      });
+      setComplaints([]);
+      setClassroomAllocation(null);
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Building2, Plus, MapPin, CheckCircle2 } from 'lucide-react';
+import { EmptyState } from '../components/EmptyState';
 import { apiRequest } from '../lib/api';
 
 export function BuildingsManagement() {
@@ -24,35 +25,7 @@ export function BuildingsManagement() {
       const res = await apiRequest('/buildings');
       setBuildings(res.data || []);
     } catch {
-      // Mock fallback
-      setBuildings([
-        {
-          id: 'b-1',
-          building_name: 'Science & Engineering Complex',
-          building_code: 'SEC',
-          rooms: [
-            { id: 'r-1', floor_number: 1, room_number: 'LH-101' },
-            { id: 'r-2', floor_number: 2, room_number: 'PHYS-204' }
-          ]
-        },
-        {
-          id: 'b-2',
-          building_name: 'Ramanujan Computing Center',
-          building_code: 'RCC',
-          rooms: [
-            { id: 'r-3', floor_number: 1, room_number: 'LAB-1' },
-            { id: 'r-4', floor_number: 3, room_number: 'SERVER-301' }
-          ]
-        },
-        {
-          id: 'b-3',
-          building_name: 'Central University Library',
-          building_code: 'CUL',
-          rooms: [
-            { id: 'r-5', floor_number: 2, room_number: 'READING-2A' }
-          ]
-        }
-      ]);
+      setBuildings([]);
     } finally {
       setLoading(false);
     }
@@ -148,40 +121,50 @@ export function BuildingsManagement() {
       )}
 
       {/* Buildings List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {buildings.map((b) => (
-          <div key={b.id} className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm space-y-4">
-            <div className="flex items-start justify-between">
-              <div>
-                <span className="font-mono text-xs font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                  {b.building_code}
-                </span>
-                <h3 className="text-base font-bold text-stone-900 mt-2">{b.building_name}</h3>
-              </div>
-              <div className="p-2 rounded-lg bg-stone-100 text-stone-600">
-                <Building2 className="w-5 h-5" />
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-stone-100">
-              <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider block mb-2">
-                Registered Rooms ({(b.rooms || []).length})
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {(b.rooms || []).map((r) => (
-                  <span
-                    key={r.id}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded bg-stone-50 border border-stone-200/80 text-xs font-medium text-stone-700"
-                  >
-                    <MapPin className="w-3 h-3 text-stone-400" />
-                    <span>{r.room_number} (Fl {r.floor_number})</span>
+      {buildings.length === 0 ? (
+        <EmptyState
+          icon={Building2}
+          title="No campus buildings registered"
+          description="No academic facilities or departments added yet. Register a building to organize lecture halls and labs."
+          actionLabel="Add Campus Building"
+          onAction={() => setShowAddBldg(true)}
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {buildings.map((b) => (
+            <div key={b.id} className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm space-y-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="font-mono text-xs font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    {b.building_code}
                   </span>
-                ))}
+                  <h3 className="text-base font-bold text-stone-900 mt-2">{b.building_name}</h3>
+                </div>
+                <div className="p-2 rounded-lg bg-stone-100 text-stone-600">
+                  <Building2 className="w-5 h-5" />
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-stone-100">
+                <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider block mb-2">
+                  Registered Rooms ({(b.rooms || []).length})
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(b.rooms || []).map((r) => (
+                    <span
+                      key={r.id}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded bg-stone-50 border border-stone-200/80 text-xs font-medium text-stone-700"
+                    >
+                      <MapPin className="w-3 h-3 text-stone-400" />
+                      <span>{r.room_number} (Fl {r.floor_number})</span>
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Add Building Modal */}
       {showAddBldg && (

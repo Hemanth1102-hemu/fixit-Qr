@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
 import { StatusBadge, PriorityBadge } from '../components/Badges';
+import { EmptyState } from '../components/EmptyState';
 import { apiRequest } from '../lib/api';
 
 export function MaintenanceDashboard() {
@@ -33,65 +34,7 @@ export function MaintenanceDashboard() {
       const res = await apiRequest('/complaints/mine'); // Or technician assignments
       setTasks(res.data || []);
     } catch {
-      // Mock demonstration tasks
-      setTasks([
-        {
-          id: 'task-1',
-          complaint_number: 'CMP-202610-1049',
-          title: 'AC unit blowing ambient air without cooling',
-          description: 'Compressor not engaging. Filter was checked and is clean.',
-          category: 'HVAC',
-          priority: 'urgent',
-          status: 'in_progress',
-          created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-          equipment: {
-            equipment_name: 'Air Conditioner Split 2-Ton',
-            asset_code: 'RCC-LAB1-AC-01',
-            rooms: {
-              room_number: 'LAB-1',
-              buildings: { building_name: 'Ramanujan Computing Center' }
-            }
-          }
-        },
-        {
-          id: 'task-2',
-          complaint_number: 'CMP-202610-1052',
-          title: 'Main Power Switchboard 16A socket burnt',
-          description: 'Heavy scorch mark near plug socket 3. Smell of melted plastic.',
-          category: 'Electrical',
-          priority: 'urgent',
-          status: 'pending',
-          created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
-          equipment: {
-            equipment_name: 'Main Power Switchboard 16A',
-            asset_code: 'RCC-LAB1-SWB-01',
-            rooms: {
-              room_number: 'LAB-1',
-              buildings: { building_name: 'Ramanujan Computing Center' }
-            }
-          }
-        },
-        {
-          id: 'task-3',
-          complaint_number: 'CMP-202610-0988',
-          title: 'LED Panel Light Center flickering',
-          description: 'Driver unit buzzing and light strobe effect.',
-          category: 'Lighting',
-          priority: 'low',
-          status: 'resolved',
-          created_at: new Date(Date.now() - 3600000 * 36).toISOString(),
-          resolved_at: new Date(Date.now() - 3600000 * 10).toISOString(),
-          resolution_notes: 'Replaced faulty constant current LED driver with genuine Philips 36W ballast.',
-          equipment: {
-            equipment_name: 'LED Panel Light Center',
-            asset_code: 'CUL-RD2A-LGT-01',
-            rooms: {
-              room_number: 'READING-2A',
-              buildings: { building_name: 'Central University Library' }
-            }
-          }
-        }
-      ]);
+      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -165,55 +108,65 @@ export function MaintenanceDashboard() {
           <span className="text-[11px] text-stone-500">{tasks.length} total tasks</span>
         </div>
 
-        <div className="divide-y divide-stone-100">
-          {tasks.map((task) => {
-            const eq = task.equipment;
-            const rm = eq?.rooms || eq?.room;
-            const bg = rm?.buildings || rm?.building;
+        {tasks.length === 0 ? (
+          <div className="p-8">
+            <EmptyState
+              icon={Wrench}
+              title="No maintenance jobs assigned"
+              description="Your work queue is completely clear. Tasks assigned to your technician account will appear here."
+            />
+          </div>
+        ) : (
+          <div className="divide-y divide-stone-100">
+            {tasks.map((task) => {
+              const eq = task.equipment;
+              const rm = eq?.rooms || eq?.room;
+              const bg = rm?.buildings || rm?.building;
 
-            return (
-              <div 
-                key={task.id}
-                onClick={() => setSelectedTask(task)}
-                className="p-5 hover:bg-stone-50/80 transition cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4"
-              >
-                <div className="space-y-1.5 max-w-2xl">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-semibold text-stone-700 bg-stone-100 px-2 py-0.5 rounded">
-                      {task.complaint_number}
-                    </span>
-                    <StatusBadge status={task.status} />
-                    <PriorityBadge priority={task.priority} />
+              return (
+                <div 
+                  key={task.id}
+                  onClick={() => setSelectedTask(task)}
+                  className="p-5 hover:bg-stone-50/80 transition cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
+                  <div className="space-y-1.5 max-w-2xl">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-semibold text-stone-700 bg-stone-100 px-2 py-0.5 rounded">
+                        {task.complaint_number}
+                      </span>
+                      <StatusBadge status={task.status} />
+                      <PriorityBadge priority={task.priority} />
+                    </div>
+
+                    <h3 className="text-sm font-bold text-stone-900">{task.title}</h3>
+                    <p className="text-xs text-stone-600 line-clamp-1">{task.description}</p>
+
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500 pt-1">
+                      <span className="font-semibold text-stone-800">{eq?.equipment_name}</span>
+                      <span className="inline-flex items-center gap-1">
+                        <Building2 className="w-3.5 h-3.5 text-stone-400" />
+                        <span>{bg?.building_name}</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5 text-stone-400" />
+                        <span>Room {rm?.room_number}</span>
+                      </span>
+                    </div>
                   </div>
 
-                  <h3 className="text-sm font-bold text-stone-900">{task.title}</h3>
-                  <p className="text-xs text-stone-600 line-clamp-1">{task.description}</p>
-
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500 pt-1">
-                    <span className="font-semibold text-stone-800">{eq?.equipment_name}</span>
-                    <span className="inline-flex items-center gap-1">
-                      <Building2 className="w-3.5 h-3.5 text-stone-400" />
-                      <span>{bg?.building_name}</span>
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-stone-400" />
-                      <span>Room {rm?.room_number}</span>
-                    </span>
+                  <div className="shrink-0 flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition"
+                    >
+                      Manage Work
+                    </button>
                   </div>
                 </div>
-
-                <div className="shrink-0 flex items-center gap-2">
-                  <button
-                    type="button"
-                    className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition"
-                  >
-                    Manage Work
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Technician Work Order Modal */}

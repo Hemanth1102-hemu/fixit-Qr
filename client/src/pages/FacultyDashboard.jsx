@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
 import { StatusBadge, PriorityBadge } from '../components/Badges';
+import { EmptyState } from '../components/EmptyState';
 import { apiRequest } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -40,41 +41,8 @@ export function FacultyDashboard() {
           setClassroomAllocation(classRes.data);
         }
       } catch {
-        // Fallback for preview
-        setComplaints([
-          {
-            id: 'cmp-fac-1',
-            complaint_number: 'CMP-202610-5011',
-            title: 'Digital Podium Touchscreen Unresponsive in Lecture Hall',
-            status: 'in_progress',
-            priority: 'high',
-            category: 'Electronics',
-            created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
-            equipment: {
-              equipment_name: 'Overhead 4K Projector & Smart Screen',
-              asset_code: 'UB-201-AV-01',
-              rooms: {
-                room_number: 'UB-201',
-                buildings: { building_name: 'University Building (UB)' }
-              }
-            }
-          }
-        ]);
-        setClassroomAllocation({
-          has_active_allocation: true,
-          institutional_record: {
-            department: 'Electronics & Communication',
-            reg_or_emp_no: 'EMP-SRM-4491',
-            section: 'Associate Professor / PG Lab'
-          },
-          current_room: {
-            building_name: 'University Building (UB)',
-            building_code: 'UB',
-            floor_number: 2,
-            room_number: 'UB-201',
-            session_type: 'Laboratory Session'
-          }
-        });
+        setComplaints([]);
+        setClassroomAllocation(null);
       } finally {
         setLoading(false);
       }
@@ -191,26 +159,36 @@ export function FacultyDashboard() {
           </select>
         </div>
 
-        <div className="divide-y divide-stone-100">
-          {filtered.map((c) => (
-            <div key={c.id} className="p-5 hover:bg-stone-50/70 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1.5 max-w-xl">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-semibold text-stone-600 bg-stone-100 px-2 py-0.5 rounded">
-                    {c.complaint_number}
-                  </span>
-                  <StatusBadge status={c.status} />
-                  <PriorityBadge priority={c.priority} />
-                </div>
-                <h3 className="text-sm font-bold text-stone-900">{c.title}</h3>
-                <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500">
-                  <span>Room {c.equipment?.rooms?.room_number || 'General'}</span>
-                  <span>{new Date(c.created_at).toLocaleDateString()}</span>
+        {filtered.length === 0 ? (
+          <div className="p-8">
+            <EmptyState
+              icon={ClipboardList}
+              title="No complaints filed"
+              description={searchQuery || filterStatus !== 'all' ? "No complaints match your active filter." : "You have not reported any maintenance issues yet. Use the scan or report button to submit a ticket."}
+            />
+          </div>
+        ) : (
+          <div className="divide-y divide-stone-100">
+            {filtered.map((c) => (
+              <div key={c.id} className="p-5 hover:bg-stone-50/70 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1.5 max-w-xl">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-semibold text-stone-600 bg-stone-100 px-2 py-0.5 rounded">
+                      {c.complaint_number}
+                    </span>
+                    <StatusBadge status={c.status} />
+                    <PriorityBadge priority={c.priority} />
+                  </div>
+                  <h3 className="text-sm font-bold text-stone-900">{c.title}</h3>
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500">
+                    <span>Room {c.equipment?.rooms?.room_number || 'General'}</span>
+                    <span>{new Date(c.created_at).toLocaleDateString()}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
     </div>

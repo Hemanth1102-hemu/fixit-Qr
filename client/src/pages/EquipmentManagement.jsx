@@ -11,6 +11,7 @@ import {
   Download
 } from 'lucide-react';
 import { QrModal } from '../components/QrModal';
+import { EmptyState } from '../components/EmptyState';
 import { apiRequest } from '../lib/api';
 
 export function EquipmentManagement() {
@@ -42,65 +43,8 @@ export function EquipmentManagement() {
       setEquipmentList(equipRes.data || []);
       setBuildings(bldgRes.data || []);
     } catch {
-      // Mock seed data fallback for preview
-      setEquipmentList([
-        {
-          id: 'eq-1',
-          equipment_name: 'Ceiling Fan Front-Left',
-          asset_code: 'SEC-LH101-FAN-01',
-          equipment_type: 'Electrical',
-          description: 'Crompton 1200mm high speed ceiling fan',
-          qr_token: 'qr_sec_lh101_fan01_7f8d2a',
-          is_active: true,
-          rooms: {
-            room_number: 'LH-101',
-            floor_number: 1,
-            buildings: { building_name: 'Science & Engineering Complex' }
-          }
-        },
-        {
-          id: 'eq-2',
-          equipment_name: 'Overhead 4K Projector',
-          asset_code: 'SEC-LH101-PRJ-01',
-          equipment_type: 'Electronics',
-          description: 'Epson ceiling mounted digital projector',
-          qr_token: 'qr_sec_lh101_prj01_4c9b1e',
-          is_active: true,
-          rooms: {
-            room_number: 'LH-101',
-            floor_number: 1,
-            buildings: { building_name: 'Science & Engineering Complex' }
-          }
-        },
-        {
-          id: 'eq-3',
-          equipment_name: 'Air Conditioner Split 2-Ton',
-          asset_code: 'RCC-LAB1-AC-01',
-          equipment_type: 'HVAC',
-          description: 'Daikin inverter split AC near server rack',
-          qr_token: 'qr_rcc_lab1_ac01_8e1f5d',
-          is_active: true,
-          rooms: {
-            room_number: 'LAB-1',
-            floor_number: 1,
-            buildings: { building_name: 'Ramanujan Computing Center' }
-          }
-        },
-        {
-          id: 'eq-4',
-          equipment_name: 'Main Power Switchboard 16A',
-          asset_code: 'RCC-LAB1-SWB-01',
-          equipment_type: 'Electrical',
-          description: 'Anchor modular switchboard controlling PC row A',
-          qr_token: 'qr_rcc_lab1_swb01_3a7b9c',
-          is_active: true,
-          rooms: {
-            room_number: 'LAB-1',
-            floor_number: 1,
-            buildings: { building_name: 'Ramanujan Computing Center' }
-          }
-        }
-      ]);
+      setEquipmentList([]);
+      setBuildings([]);
     } finally {
       setLoading(false);
     }
@@ -191,60 +135,72 @@ export function EquipmentManagement() {
 
       {/* Equipment Table */}
       <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-stone-700">
-            <thead className="bg-stone-50 text-[11px] font-semibold uppercase tracking-wider text-stone-500 border-b border-stone-200">
-              <tr>
-                <th className="px-4 py-3">Asset Code</th>
-                <th className="px-4 py-3">Equipment Name</th>
-                <th className="px-4 py-3">Type</th>
-                <th className="px-4 py-3">Location</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">QR Label</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-100">
-              {filtered.map((item) => {
-                const rm = item.rooms || item.room;
-                const bg = rm?.buildings || rm?.building;
-                return (
-                  <tr key={item.id} className="hover:bg-stone-50/70 transition">
-                    <td className="px-4 py-3.5 font-mono font-bold text-amber-800 whitespace-nowrap">
-                      {item.asset_code}
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <p className="font-semibold text-stone-900">{item.equipment_name}</p>
-                      {item.description && <p className="text-[11px] text-stone-500 line-clamp-1">{item.description}</p>}
-                    </td>
-                    <td className="px-4 py-3.5 whitespace-nowrap">
-                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-stone-100 text-stone-700 border border-stone-200">
-                        {item.equipment_type}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-stone-600 whitespace-nowrap">
-                      {bg?.building_name || 'Campus'} - Room {rm?.room_number || '101'}
-                    </td>
-                    <td className="px-4 py-3.5 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${item.is_active ? 'bg-emerald-50 text-emerald-800' : 'bg-stone-100 text-stone-600'}`}>
-                        {item.is_active ? 'Active' : 'Decommissioned'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => setActiveQrItem(item)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-semibold transition"
-                      >
-                        <QrCode className="w-3.5 h-3.5 text-amber-700" />
-                        <span>View / Print QR</span>
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        {filtered.length === 0 ? (
+          <div className="p-8">
+            <EmptyState
+              icon={QrCode}
+              title="No campus equipment found"
+              description={search ? "No assets match your search filter." : "No equipment records have been registered yet. Add equipment to generate print-ready QR code labels."}
+              actionLabel="Register Equipment"
+              onAction={() => setShowRegisterModal(true)}
+            />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-stone-700">
+              <thead className="bg-stone-50 text-[11px] font-semibold uppercase tracking-wider text-stone-500 border-b border-stone-200">
+                <tr>
+                  <th className="px-4 py-3">Asset Code</th>
+                  <th className="px-4 py-3">Equipment Name</th>
+                  <th className="px-4 py-3">Type</th>
+                  <th className="px-4 py-3">Location</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 text-right">QR Label</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone-100">
+                {filtered.map((item) => {
+                  const rm = item.rooms || item.room;
+                  const bg = rm?.buildings || rm?.building;
+                  return (
+                    <tr key={item.id} className="hover:bg-stone-50/70 transition">
+                      <td className="px-4 py-3.5 font-mono font-bold text-amber-800 whitespace-nowrap">
+                        {item.asset_code}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <p className="font-semibold text-stone-900">{item.equipment_name}</p>
+                        {item.description && <p className="text-[11px] text-stone-500 line-clamp-1">{item.description}</p>}
+                      </td>
+                      <td className="px-4 py-3.5 whitespace-nowrap">
+                        <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-stone-100 text-stone-700 border border-stone-200">
+                          {item.equipment_type}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-stone-600 whitespace-nowrap">
+                        {bg?.building_name || 'Campus'} - Room {rm?.room_number || '101'}
+                      </td>
+                      <td className="px-4 py-3.5 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${item.is_active ? 'bg-emerald-50 text-emerald-800' : 'bg-stone-100 text-stone-600'}`}>
+                          {item.is_active ? 'Active' : 'Decommissioned'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => setActiveQrItem(item)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-semibold transition"
+                        >
+                          <QrCode className="w-3.5 h-3.5 text-amber-700" />
+                          <span>View / Print QR</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* QR Code Preview & Print Modal */}

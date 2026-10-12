@@ -5,12 +5,17 @@
 export const ROLES = {
   STUDENT: 'student',
   FACULTY: 'faculty',
+  TECHNICIAN: 'technician',
   MAINTENANCE_STAFF: 'technician',
   MAINTENANCE_ADMIN: 'maintenance_admin',
   ADMIN: 'admin',
   SUPERVISOR: 'supervisor',
   SYSTEM_ADMIN: 'system_admin'
 };
+
+export function isAuthorizedRole(role) {
+  return Object.values(ROLES).includes(role);
+}
 
 export const ROLE_DESTINATIONS = {
   student: '/student/dashboard',
